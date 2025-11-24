@@ -9,6 +9,7 @@ app/build/
 local.properties
 
 # --- IDE (Android Studio / IntelliJ) ---
+.idea/
 .idea/caches
 .idea/libraries
 .idea/modules.xml
