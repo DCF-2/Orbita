@@ -1,5 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <style name="Theme.Orbita" parent="android:Theme.Material.Light.NoActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Orbita" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/space_blue_dark</item>
+        <item name="colorPrimaryVariant">@color/space_black</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/orbit_orange</item>
+        <item name="colorSecondaryVariant">@color/orbit_yellow</item>
+        <item name="colorOnSecondary">@color/space_black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/space_black</item>
+        <!-- Customize your theme here. -->
+    </style>
 </resources>
