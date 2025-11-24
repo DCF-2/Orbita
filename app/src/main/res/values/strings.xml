@@ -2,4 +2,7 @@
     <string name="app_name">Orbita</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_observatorio">ObservatorioActivity</string>
+    <string name="title_activity_perfil">PerfilActivity</string>
+    <string name="title_activity_nova_observacao">NovaObservacaoActivity</string>
 </resources>

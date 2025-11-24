@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="@color/space_black">
+
+    <TextView
+        android:id="@+id/lblNewPost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nova Observação"
+        android:textColor="@color/white"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Campo Título -->
+    <EditText
+        android:id="@+id/inputTitulo"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:background="#F0F0F0"
+        android:hint="O que você viu? (Título)"
+        android:padding="16dp"
+        android:textColor="#000000"
+        app:layout_constraintTop_toBottomOf="@id/lblNewPost" />
+
+    <!-- Campo Descrição -->
+    <EditText
+        android:id="@+id/inputDescricao"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginTop="16dp"
+        android:background="#F0F0F0"
+        android:gravity="top|start"
+        android:hint="Descreva os detalhes (equipamento, condições do céu...)"
+        android:padding="16dp"
+        android:textColor="#000000"
+        app:layout_constraintTop_toBottomOf="@id/inputTitulo" />
+
+    <!-- Botão Salvar -->
+    <Button
+        android:id="@+id/btnSalvarPost"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="@color/orbit_orange"
+        android:text="Registrar no Diário"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/inputDescricao" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
