@@ -4,11 +4,15 @@
 
     <application
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Orbita">
+        android:theme="@style/Theme.Orbita"> <!-- Certifique-se que o tema existe em themes.xml -->
+
+        <!-- Login Activity (Tela Inicial / Launcher) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
@@ -16,35 +20,24 @@
             android:theme="@style/Theme.Orbita">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Activity de Cadastro -->
+        </activity>
+
+        <!-- Register Activity -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
             android:label="@string/title_activity_register"
-            android:theme="@style/Theme.Orbita" /> <!-- MainActivity (Home) -->
+            android:theme="@style/Theme.Orbita" />
+
+        <!-- Main Activity (Onde toda a mágica do Compose acontece) -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Orbita" /> <!-- Observatório -->
-        <activity
-            android:name=".ObservatorioActivity"
-            android:exported="false"
-            android:label="@string/title_activity_observatorio"
-            android:theme="@style/Theme.Orbita" /> <!-- Perfil -->
-        <activity
-            android:name=".PerfilActivity"
-            android:exported="false"
-            android:label="@string/title_activity_perfil"
             android:theme="@style/Theme.Orbita" />
-        <activity
-            android:name=".NovaObservacaoActivity"
-            android:exported="false"
-            android:label="@string/title_activity_nova_observacao"
-            android:theme="@style/Theme.Orbita" />
+
     </application>
 
 </manifest>

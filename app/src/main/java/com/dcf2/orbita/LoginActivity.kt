@@ -2,29 +2,52 @@ package com.dcf2.orbita
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        setContent {
+            MaterialTheme {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFF050B14)), // Fundo Dark
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Orbita", fontSize = 32.sp, color = Color.White)
+                    Spacer(modifier = Modifier.height(32.dp))
 
-        // Botão de Login (Simulação)
-        val btnLogin = findViewById<Button>(R.id.btnLogin)
-        btnLogin.setOnClickListener {
-            // Vai para a MainActivity (Home)
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish() // Fecha o login para não voltar
-        }
+                    Button(
+                        onClick = {
+                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                            finish()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2994A))
+                    ) {
+                        Text("Entrar (Simulado)")
+                    }
 
-        // Link para Tela de Cadastro
-        val txtRegister = findViewById<TextView>(R.id.txtRegister)
-        txtRegister.setOnClickListener {
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextButton(onClick = {
+                        startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
+                    }) {
+                        Text("Criar Conta", color = Color(0xFF2D9CDB))
+                    }
+                }
+            }
         }
     }
 }

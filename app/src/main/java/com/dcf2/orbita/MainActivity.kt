@@ -1,68 +1,65 @@
 package com.dcf2.orbita
 
-import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.dcf2.orbita.R
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.dcf2.orbita.ui.NovaObservacaoDialog
+import com.dcf2.orbita.ui.nav.BottomNavBar
+import com.dcf2.orbita.ui.nav.MainNavHost
+import com.dcf2.orbita.ui.theme.OrbitaTheme // Certifique-se de ter um tema ou use MaterialTheme
+import androidx.compose.ui.graphics.Color
 
-class MainActivity : AppCompatActivity() {
-
-    // Declaramos estas variáveis aqui em cima para podermos usá-las no onResume depois
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: PostAdapter
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        enableEdgeToEdge()
 
-        // --- 1. Configuração da Lista (Feed) ---
-        recyclerView = findViewById(R.id.listaOrbita)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        val viewModel: MainViewModel by viewModels()
 
-        // Carrega a lista inicial de posts falsos
-        adapter = PostAdapter(MockData.posts)
-        recyclerView.adapter = adapter
+        setContent {
+            OrbitaTheme {
+                val navController = rememberNavController()
+                var showDialog by remember { mutableStateOf(false) }
 
-        // --- 2. Configuração do Botão Flutuante (Novo Post) ---
-        val fab = findViewById<FloatingActionButton>(R.id.fabNewPost)
-        fab.setOnClickListener {
-            // Abre a tela de criar nova observação
-            val intent = Intent(this, NovaObservacaoActivity::class.java)
-            startActivity(intent)
-        }
-
-        // --- 3. Configuração da Navegação Inferior ---
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNav.selectedItemId = R.id.nav_home
-
-        bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> true // Já estamos na Home
-                R.id.nav_observatorio -> {
-                    startActivity(Intent(this, ObservatorioActivity::class.java))
-                    finish()
-                    true
+                if (showDialog) {
+                    NovaObservacaoDialog(
+                        onDismiss = { showDialog = false },
+                        onConfirm = { titulo, desc ->
+                            viewModel.addObservacao(titulo, desc)
+                            showDialog = false
+                        }
+                    )
                 }
-                R.id.nav_perfil -> {
-                    startActivity(Intent(this, PerfilActivity::class.java))
-                    finish()
-                    true
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = { BottomNavBar(navController) },
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = { showDialog = true },
+                            containerColor =  Color(0xFFF2994A) // Laranja Orbita
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Novo Post")
+                        }
+                    }
+                ) { innerPadding ->
+                    MainNavHost(
+                        navController = navController,
+                        viewModel = viewModel,
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
-                else -> false
             }
         }
-    }
-
-    // Este método é chamado automaticamente pelo Android sempre que a tela volta a aparecer
-    // (Por exemplo, quando você fecha a tela de "Nova Observação" e volta pra cá)
-    override fun onResume() {
-        super.onResume()
-        // Recarrega a lista para mostrar o novo post que acabamos de criar
-        adapter = PostAdapter(MockData.posts)
-        recyclerView.adapter = adapter
     }
 }
