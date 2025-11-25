@@ -10,13 +10,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Orbita"> <!-- Certifique-se que o tema existe em themes.xml -->
+        android:theme="@style/Theme.Orbita">
 
-        <!-- Login Activity (Tela Inicial / Launcher) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:label="@string/title_activity_login"
+            android:label="@string/app_name"
             android:theme="@style/Theme.Orbita">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,14 +23,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Register Activity -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
             android:label="@string/title_activity_register"
             android:theme="@style/Theme.Orbita" />
 
-        <!-- Main Activity (Onde toda a mágica do Compose acontece) -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
@@ -39,5 +36,4 @@
             android:theme="@style/Theme.Orbita" />
 
     </application>
-
 </manifest>
