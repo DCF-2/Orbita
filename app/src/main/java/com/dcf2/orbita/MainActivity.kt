@@ -31,6 +31,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+//adicionar no mapa para que as pessoas digam quais os melhores locais para observação
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {

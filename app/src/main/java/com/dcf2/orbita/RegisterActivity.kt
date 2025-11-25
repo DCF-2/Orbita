@@ -124,7 +124,7 @@ fun RegisterTextField(
             visualTransformation = if (isPassword) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(25.dp),
-            colors = TextFieldDefaults.colors( // CORRIGIDO AQUI: De textFieldColors para colors
+            colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White.copy(alpha = 0.8f),
                 unfocusedContainerColor = Color.White.copy(alpha = 0.8f),
                 disabledContainerColor = Color.White.copy(alpha = 0.8f),

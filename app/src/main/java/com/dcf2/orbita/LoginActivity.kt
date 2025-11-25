@@ -120,7 +120,7 @@ fun LoginScreen(onLoginClick: () -> Unit, onRegisterClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun OrbitaTextField(
     label: String,
@@ -142,7 +142,7 @@ fun OrbitaTextField(
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(25.dp),
-            colors = TextFieldDefaults.colors( // CORRIGIDO AQUI: De textFieldColors para colors
+            colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White.copy(alpha = 0.8f),
                 unfocusedContainerColor = Color.White.copy(alpha = 0.8f),
                 disabledContainerColor = Color.White.copy(alpha = 0.8f),
