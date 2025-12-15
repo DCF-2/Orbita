@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.dcf2.orbita.ui.NovaObservacaoDialog
@@ -46,6 +47,7 @@ fun MainScreen(viewModel: MainViewModel) {
         BottomNavItem.Home,
         BottomNavItem.Explorar,
         BottomNavItem.Observatorio,
+        BottomNavItem.Mapa,
         BottomNavItem.Diario
     )
 
@@ -87,7 +89,12 @@ fun MainScreen(viewModel: MainViewModel) {
                 bottomNavItems.forEach { item ->
                     NavigationBarItem(
                         icon = { Icon(item.icon, contentDescription = item.title) },
-                        label = { Text(item.title) },
+                        label = {
+                            Text(
+                                text = item.title,
+                                maxLines = 1, // Força 1 linha
+                                style = androidx.compose.ui.text.TextStyle(fontSize = 10.sp) // Fonte menor
+                            )},
                         selected = currentRoute == item.route,
                         onClick = {
                             navController.navigate(item.route) {

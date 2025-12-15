@@ -1,8 +1,8 @@
 # --- Build do Android e Gradle ---
 .gradle/
+./gradle/libs.versions.toml
 build/
 app/build/
-!gradle-wrapper.jar
 
 # --- Arquivos de Configuração Local (NUNCA SUBIR) ---
 # Contém o caminho do SDK na sua máquina. Se subir, quebra o projeto de outros.
@@ -19,6 +19,10 @@ local.properties
 *.iml
 *.ipr
 *.iws
+
+#--- kotlin ---
+.kotlin
+./.kotlin/
 
 # --- Visual Studio Code (se alguém da equipe usar) ---
 .vscode/

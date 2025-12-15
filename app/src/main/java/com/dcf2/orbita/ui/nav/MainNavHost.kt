@@ -8,6 +8,7 @@ import com.dcf2.orbita.MainViewModel
 import com.dcf2.orbita.ui.DiarioPage
 import com.dcf2.orbita.ui.ExplorarPage
 import com.dcf2.orbita.ui.HomePage
+import com.dcf2.orbita.ui.MapPage
 import com.dcf2.orbita.ui.ObservatorioPage
 import com.dcf2.orbita.ui.PerfilPage
 
@@ -34,6 +35,10 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
         // Rota Diário
         composable(BottomNavItem.Diario.route) {
             DiarioPage(viewModel = viewModel)
+        }
+
+        //Rota Mapa
+        composable(BottomNavItem.Mapa.route) { MapPage(viewModel = viewModel)
         }
 
         // Rota Perfil

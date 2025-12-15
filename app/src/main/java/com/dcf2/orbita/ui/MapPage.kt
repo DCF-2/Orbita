@@ -1,25 +1,63 @@
 package com.dcf2.orbita.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dcf2.orbita.MainViewModel
 
 @Composable
-fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
-    // Placeholder para o Google Maps (simulando a estrutura do WeatherApp)
-    Box(
-        modifier = modifier
+fun MapPage(viewModel: MainViewModel) {
+    Column(
+        modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0F172A)),
-        contentAlignment = Alignment.Center
+            .background(Color(0xFF050B14)) // Fundo escuro
     ) {
-        Text(text = "Mapa do Observatório \n(Em breve com Google Maps)", color = Color.White, fontSize = 18.sp)
+        // Título
+        Text(
+            text = "Mapa de Eventos",
+            color = Color.White,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(16.dp)
+        )
+
+        // Simulação do Mapa (Um quadrado verde/azul representando o mapa)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .background(Color(0xFF1E293B), shape = RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Mapa",
+                    tint = Color(0xFFF2994A),
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Google Maps em Breve",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Aqui você verá locais de observação",
+                    color = Color.Gray
+                )
+            }
+        }
     }
 }
