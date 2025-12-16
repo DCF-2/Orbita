@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp // Use automirrored se seu compose for novo, ou Icons.Default.ExitToApp
+import androidx.compose.material.icons.filled.ExitToApp // Fallback caso o de cima n exista
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +20,11 @@ import androidx.compose.ui.unit.sp
 import com.dcf2.orbita.MainViewModel
 
 @Composable
-fun PerfilPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+fun PerfilPage(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    onLogout: () -> Unit // <--- 1. Recebe a ação de logout
+) {
     val user = viewModel.usuario
 
     Column(
@@ -69,6 +74,7 @@ fun PerfilPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 
         Spacer(modifier = Modifier.weight(1f))
 
+        // Botão Configurações
         Button(
             onClick = {},
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C3E50)),
@@ -77,6 +83,20 @@ fun PerfilPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             Icon(Icons.Default.Settings, null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Configurações")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // 3. Botão de Logout (Vermelho)
+        Button(
+            onClick = { onLogout() }, // Chama a função passada por parâmetro
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC0392B)), // Vermelho escuro
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // Tente Icons.AutoMirrored.Filled.ExitToApp se o Default não funcionar
+            Icon(Icons.Default.ExitToApp, null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Sair da Conta")
         }
     }
 }

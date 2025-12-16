@@ -2,157 +2,113 @@ package com.dcf2.orbita
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.dcf2.orbita.ui.theme.OrbitaTheme
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import com.dcf2.orbita.ui.LoginScreen
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 class LoginActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
+
+    // Configuração do Resultado do Google
+    private val launcherGoogle = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val conta = task.getResult(ApiException::class.java)
+            // Se deu certo no Google, autentica no Firebase
+            firebaseAuthWithGoogle(conta.idToken!!)
+        } catch (e: ApiException) {
+            Toast.makeText(this, "Erro Google: ${e.statusCode}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        auth = FirebaseAuth.getInstance()
+
         setContent {
-            OrbitaTheme {
-                LoginScreen(
-                    onLoginClick = {
-                        startActivity(Intent(this, MainActivity::class.java))
-                        finish()
-                    },
-                    onRegisterClick = {
-                        startActivity(Intent(this, RegisterActivity::class.java))
-                    }
-                )
-            }
+            // Chamamos a tela visual e passamos as funções de lógica
+            LoginScreen(
+                onLoginClick = { email, senha ->
+                    fazerLoginEmail(email, senha)
+                },
+                onGoogleClick = {
+                    iniciarLoginGoogle()
+                },
+                onRegisterClick = {
+                    // Navegar para tela de Registro (precisa criar essa Activity depois)
+                    startActivity(Intent(this, RegisterActivity::class.java))
+                }
+            )
         }
     }
-}
 
-@Composable
-fun LoginScreen(onLoginClick: () -> Unit, onRegisterClick: () -> Unit) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.bg_space),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Surface(
-            color = Color.Black.copy(alpha = 0.5f),
-            modifier = Modifier.fillMaxSize()
-        ) {}
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo_orbita),
-                contentDescription = "Logo Orbita",
-                modifier = Modifier.size(120.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Órbita",
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            OrbitaTextField(
-                label = "Username",
-                value = username,
-                onValueChange = { username = it },
-                labelColor = Color(0xFFF2C94C)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OrbitaTextField(
-                label = "Password",
-                value = password,
-                onValueChange = { password = it },
-                labelColor = Color(0xFFF2C94C),
-                isPassword = true
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onLoginClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2994A)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(25.dp)
-            ) {
-                Text("Entrar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextButton(onClick = onRegisterClick) {
-                Text("Não tem conta? ", color = Color.Gray)
-                Text("Cadastre-se", color = Color(0xFF2D9CDB), fontWeight = FontWeight.Bold)
-            }
+    // --- Verifica se já está logado ao abrir o app ---
+    override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            irParaMain()
         }
     }
-}
 
+    // --- MÉTODOS DE LOGIN ---
 
-@Composable
-fun OrbitaTextField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    labelColor: Color = Color.White,
-    isPassword: Boolean = false
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            color = labelColor,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
-        )
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(25.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White.copy(alpha = 0.8f),
-                unfocusedContainerColor = Color.White.copy(alpha = 0.8f),
-                disabledContainerColor = Color.White.copy(alpha = 0.8f),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.Black,
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black
-            ),
-            singleLine = true
-        )
+    // 1. Login com Email e Senha (Do seu exemplo WeatherApp)
+    private fun fazerLoginEmail(email: String, pass: String) {
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Sucesso!", Toast.LENGTH_SHORT).show()
+                    irParaMain()
+                } else {
+                    Toast.makeText(this, "Falha: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    // 2. Iniciar fluxo do Google
+    private fun iniciarLoginGoogle() {
+        val clientId = "185785159810-g1ijhfclaps0r4mg9mrhiojpimtmgmbi.apps.googleusercontent.com"
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(clientId)
+            .requestEmail()
+            .build()
+        val googleClient = GoogleSignIn.getClient(this, gso)
+        launcherGoogle.launch(googleClient.signInIntent)
+    }
+
+    // 3. Autenticar Google no Firebase
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    irParaMain()
+                } else {
+                    Toast.makeText(this, "Erro no Firebase Google", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun irParaMain() {
+        // Flags para limpar o histórico e o usuário não voltar pro login com o botão "voltar"
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }

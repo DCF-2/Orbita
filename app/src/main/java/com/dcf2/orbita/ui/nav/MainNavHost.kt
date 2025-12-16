@@ -1,6 +1,9 @@
 package com.dcf2.orbita.ui.nav
 
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +14,8 @@ import com.dcf2.orbita.ui.HomePage
 import com.dcf2.orbita.ui.MapPage
 import com.dcf2.orbita.ui.ObservatorioPage
 import com.dcf2.orbita.ui.PerfilPage
+import com.dcf2.orbita.LoginActivity
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
@@ -42,8 +47,26 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
         }
 
         // Rota Perfil
-        composable("perfil_route") {
-            PerfilPage(viewModel = viewModel)
+        composable("perfil_route") { // ou o nome da sua rota
+            val context = LocalContext.current // Pega o contexto atual
+
+            PerfilPage(
+                viewModel = viewModel,
+                onLogout = {
+                    // 1. Desloga do Firebase
+                    FirebaseAuth.getInstance().signOut()
+
+                    // 2. Cria o Intent para voltar para a tela de Login
+                    val intent = Intent(context, LoginActivity::class.java)
+
+                    // 3. Limpa a pilha (para o botão voltar não retornar ao perfil)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                    // 4. Inicia a Activity e encerra a atual
+                    context.startActivity(intent)
+                    (context as? Activity)?.finish()
+                }
+            )
         }
     }
 }

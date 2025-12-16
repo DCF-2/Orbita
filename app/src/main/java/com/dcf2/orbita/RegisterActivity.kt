@@ -1,13 +1,16 @@
 package com.dcf2.orbita
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,28 +19,61 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dcf2.orbita.ui.theme.OrbitaTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 
 class RegisterActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        auth = FirebaseAuth.getInstance()
         setContent {
-            OrbitaTheme {
-                RegisterScreen(onBackClick = { finish() })
+            RegisterScreen(
+                onRegisterClick = { nome, email, senha -> cadastrarUsuario(nome, email, senha) },
+                onBackClick = { finish() }
+            )
+        }
+    }
+
+    private fun cadastrarUsuario(nome: String, email: String, pass: String) {
+        if (nome.isEmpty() || email.isEmpty() || pass.isEmpty()) return
+        auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                val user = auth.currentUser
+                user?.updateProfile(UserProfileChangeRequest.Builder().setDisplayName(nome).build())?.addOnCompleteListener {
+                    Toast.makeText(this, "Conta criada!", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
+                    finish()
+                }
+            } else {
+                Toast.makeText(this, "Erro: ${task.exception?.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
 }
 
 @Composable
-fun RegisterScreen(onBackClick: () -> Unit) {
-    var name by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
+fun RegisterScreen(
+    onRegisterClick: (String, String, String) -> Unit,
+    onBackClick: () -> Unit
+) {
+    var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var senha by remember { mutableStateOf("") }
+    var confirmarSenha by remember { mutableStateOf("") }
+
+    // --- CORES & ESTILO ---
+    val accentColor = Color(0xFFF2994A)
+    val textColor = Color.White
+    val containerColor = Color.White.copy(alpha = 0.1f)
+    val fieldShape = RoundedCornerShape(16.dp)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -47,94 +83,88 @@ fun RegisterScreen(onBackClick: () -> Unit) {
             modifier = Modifier.fillMaxSize()
         )
 
-        Surface(color = Color.Black.copy(alpha = 0.4f), modifier = Modifier.fillMaxSize()) {}
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+        )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Welcome!",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Text(
-                text = "To continue, you need to provide some information.",
-                color = Color.LightGray,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
-
-            RegisterTextField(label = "What is your name?", value = name, onValueChange = { name = it })
-            Spacer(modifier = Modifier.height(16.dp))
-
-            RegisterTextField(label = "What is your username?", value = username, onValueChange = { username = it })
-            Spacer(modifier = Modifier.height(16.dp))
-
-            RegisterTextField(label = "What is your email?", value = email, onValueChange = { email = it })
-            Spacer(modifier = Modifier.height(16.dp))
-
-            RegisterTextField(label = "Write your password", value = password, onValueChange = { password = it }, isPassword = true)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            RegisterTextField(label = "Confirm your password", value = confirmPassword, onValueChange = { confirmPassword = it }, isPassword = true)
+            Text("Criar Conta", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = textColor)
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
-                onClick = onBackClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.9f)),
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(25.dp)
-            ) {
-                Text("Register", color = Color(0xFF090979), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            @Composable
+            fun OrbitaField(valStr: String, setVal: (String)->Unit, lbl: String, pass: Boolean = false) {
+                OutlinedTextField(
+                    value = valStr, onValueChange = setVal, label = { Text(lbl) },
+                    visualTransformation = if (pass) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+                    shape = fieldShape,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = containerColor,
+                        unfocusedContainerColor = containerColor,
+                        focusedBorderColor = accentColor,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                        focusedLabelColor = accentColor,
+                        unfocusedLabelColor = Color.LightGray,
+                        cursorColor = accentColor,
+                        focusedTextColor = textColor,
+                        unfocusedTextColor = textColor
+                    ),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            OrbitaField(nome, { nome = it }, "Nome de exibição")
+            OrbitaField(email, { email = it }, "E-mail")
+            OrbitaField(senha, { senha = it }, "Senha (6 caracteres)", true)
+            OrbitaField(confirmarSenha, { confirmarSenha = it }, "Confirmar Senha", true)
 
-            TextButton(onClick = onBackClick) {
-                Text("Already have an account? Login", color = Color.White)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Lógica de Validação para o Botão
+            val tudoValido = nome.isNotEmpty() && email.contains("@") && senha.length >= 6 && senha == confirmarSenha
+
+            Button(
+                onClick = { onRegisterClick(nome, email, senha) },
+                enabled = tudoValido, // Botão bloqueado se faltar dados
+                shape = fieldShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = accentColor,
+                    contentColor = Color.White,
+                    disabledContainerColor = accentColor.copy(alpha = 0.3f),
+                    disabledContentColor = Color.White.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text("Cadastrar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Rodapé com Texto + Link
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Já tem uma conta? ",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = "Fazer Login",
+                    color = accentColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.clickable { onBackClick() }
+                )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RegisterTextField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    isPassword: Boolean = false
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            color = Color.White,
-            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
-        )
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            visualTransformation = if (isPassword) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(25.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White.copy(alpha = 0.8f),
-                unfocusedContainerColor = Color.White.copy(alpha = 0.8f),
-                disabledContainerColor = Color.White.copy(alpha = 0.8f),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.Black,
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black
-            ),
-            singleLine = true
-        )
     }
 }

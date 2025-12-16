@@ -42,7 +42,7 @@ captures/
 # --- Google Services (Opcional: depende da sua estratégia de segurança) ---
 # google-services.json costuma ser ignorado em projetos open source
 # mas mantido em projetos privados. Descomente se quiser ignorar.
-google-services.json
+app/google-services.json
 
 # --- SEGURANÇA (CRÍTICO) ---
 # Nunca suba suas chaves de assinatura de release para o Git!

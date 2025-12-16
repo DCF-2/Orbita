@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21" // Importante para navegação
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -65,15 +66,17 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
 
     // FIREBASE (BOM controla as versões)
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-analytics")
 
     // GOOGLE LOGIN (Credential Manager)
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
 
     // RETROFIT (Para pegar dados da ISS)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
