@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star // Usado para o Observatório
 import androidx.compose.material.icons.filled.Edit // Usado para o Diário
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class BottomNavItem(var title: String, var icon: ImageVector, var route: String) {
@@ -27,4 +28,6 @@ sealed class BottomNavItem(var title: String, var icon: ImageVector, var route: 
 
     // Rota para o Perfil (Não aparece no menu de baixo, mas precisa da rota definida)
     object Perfil : BottomNavItem("Perfil", Icons.Default.Home, "perfil_route")
+
+    object IssDetalhes : BottomNavItem("ISS", Icons.Default.RocketLaunch, "iss_detalhes")
 }

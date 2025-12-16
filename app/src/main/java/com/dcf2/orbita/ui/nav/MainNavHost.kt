@@ -15,6 +15,7 @@ import com.dcf2.orbita.ui.MapPage
 import com.dcf2.orbita.ui.ObservatorioPage
 import com.dcf2.orbita.ui.PerfilPage
 import com.dcf2.orbita.LoginActivity
+import com.dcf2.orbita.ui.ISSTrackerPage
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -28,7 +29,7 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
 
         // Rota Explorar
         composable(BottomNavItem.Explorar.route) {
-            ExplorarPage(viewModel = viewModel)
+            ExplorarPage(viewModel = viewModel, navController = navController)
         }
 
         // Rota Observatório (CORRIGIDO AQUI)
@@ -44,6 +45,11 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
 
         //Rota Mapa
         composable(BottomNavItem.Mapa.route) { MapPage(viewModel = viewModel)
+        }
+
+        //Rota ISS
+        composable("iss_detalhes") {
+            ISSTrackerPage(viewModel = viewModel)
         }
 
         // Rota Perfil

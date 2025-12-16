@@ -1,6 +1,7 @@
 package com.dcf2.orbita.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable // Importante: Adicione este import
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,12 +19,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController // Importante: Adicione este import
 import com.dcf2.orbita.MainViewModel
 import com.dcf2.orbita.model.Curiosidade
 import com.dcf2.orbita.model.EventoAstronomico
+import com.dcf2.orbita.ui.nav.BottomNavItem // Importante: Adicione este import
 
 @Composable
-fun ExplorarPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+fun ExplorarPage(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    navController: NavController // 1. Recebe o controlador
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -33,7 +40,10 @@ fun ExplorarPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
     ) {
         // Seção ISS Tracker
         item {
-            ISSTrackerCard()
+            // 2. Define o que acontece no clique (Navegar para a rota da ISS)
+            ISSTrackerCard(onClick = {
+                navController.navigate("iss_detalhes") // Use a string direta ou BottomNavItem.IssDetalhes.route
+            })
         }
 
         // Seção Eventos
@@ -60,10 +70,12 @@ fun ExplorarPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 }
 
 @Composable
-fun ISSTrackerCard() {
+fun ISSTrackerCard(onClick: () -> Unit) { // 3. Recebe a função de clique
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() } // 4. Torna o card clicável
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -73,13 +85,14 @@ fun ISSTrackerCard() {
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text("Onde está a ISS?", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Sobrevoando: Oceano Pacífico", color = Color.Gray, fontSize = 14.sp)
+                Text("Toque para rastrear em 3D", color = Color.Gray, fontSize = 14.sp) // Texto novo
                 Text("Próxima passagem: 18:40", color = Color(0xFFF2994A), fontSize = 14.sp)
             }
         }
     }
 }
 
+// O restante (EventoCard, CuriosidadeItem) continua igual ao seu arquivo original...
 @Composable
 fun EventoCard(evento: EventoAstronomico) {
     Card(
