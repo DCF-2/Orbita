@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.dcf2.orbita.ui.NovaObservacaoDialog
+import com.dcf2.orbita.ui.dialog.NovaObservacaoDialog
 import com.dcf2.orbita.ui.nav.BottomNavItem
 import com.dcf2.orbita.ui.nav.MainNavHost
 import com.dcf2.orbita.ui.theme.OrbitaTheme

@@ -1,4 +1,4 @@
-package com.dcf2.orbita.ui
+package com.dcf2.orbita.ui.dialog
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

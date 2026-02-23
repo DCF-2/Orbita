@@ -1,4 +1,4 @@
-package com.dcf2.orbita.ui
+package com.dcf2.orbita.ui.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable // Importante: Adicione este import

@@ -1,4 +1,4 @@
-package com.dcf2.orbita.ui
+package com.dcf2.orbita.ui.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.dcf2.orbita.viewmodel.MainViewModel
 
@@ -76,7 +77,7 @@ fun ObservatorioPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             Text(
                 "🔭 Recurso AR em desenvolvimento\nIntegração com Câmera e Acelerômetro em breve.",
                 color = Color.White,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
         }

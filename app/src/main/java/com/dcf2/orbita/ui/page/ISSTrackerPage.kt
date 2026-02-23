@@ -1,4 +1,4 @@
-package com.dcf2.orbita.ui
+package com.dcf2.orbita.ui.page
 
 import android.annotation.SuppressLint
 import android.view.ViewGroup

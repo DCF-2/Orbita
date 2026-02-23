@@ -1,9 +1,10 @@
-package com.dcf2.orbita.ui
+package com.dcf2.orbita.ui.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
@@ -38,7 +39,7 @@ fun DiarioPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
-                        .background(Color(0xFF1E293B), shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                        .background(Color(0xFF1E293B), shape = RoundedCornerShape(8.dp))
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween

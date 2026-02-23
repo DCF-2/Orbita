@@ -8,14 +8,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.dcf2.orbita.viewmodel.MainViewModel
-import com.dcf2.orbita.ui.DiarioPage
-import com.dcf2.orbita.ui.ExplorarPage
-import com.dcf2.orbita.ui.HomePage
-import com.dcf2.orbita.ui.MapPage
-import com.dcf2.orbita.ui.ObservatorioPage
-import com.dcf2.orbita.ui.PerfilPage
+import com.dcf2.orbita.ui.page.DiarioPage
+import com.dcf2.orbita.ui.page.ExplorarPage
+import com.dcf2.orbita.ui.page.HomePage
+import com.dcf2.orbita.ui.page.MapPage
+import com.dcf2.orbita.ui.page.ObservatorioPage
+import com.dcf2.orbita.ui.page.PerfilPage
 import com.dcf2.orbita.LoginActivity
-import com.dcf2.orbita.ui.ISSTrackerPage
+import com.dcf2.orbita.ui.page.ISSTrackerPage
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
