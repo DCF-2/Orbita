@@ -1,9 +1,9 @@
 package com.dcf2.orbita.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.getValue       // <--- IMPORT ESSENCIAL
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue       // <--- IMPORT ESSENCIAL
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -18,14 +18,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MainViewModel : ViewModel() {
 
     // --- ISS TRACKER LOGIC ---
-    // Usando IssResponse (ou IssPositionData) conforme definimos antes
+    // Alterado para IssResponse para compatibilidade com a API
     var issResponse by mutableStateOf<IssResponse?>(null)
         private set
 
-    // Configuração do Retrofit
     private val api: IssApi by lazy {
         Retrofit.Builder()
-            .baseUrl("http://api.open-notify.org/") // Usei a URL que configuramos antes
+            .baseUrl("http://api.open-notify.org/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(IssApi::class.java)
@@ -39,7 +38,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 try {
-                    // Correção do nome do método conforme interface IssApi
+                    // Chama o método correto da interface
                     val result = api.getIssPosition()
                     issResponse = result
                     Log.d("ISS_TRACKER", "Sucesso: $result")
