@@ -22,7 +22,7 @@ import com.dcf2.orbita.viewmodel.IssViewModel
 
 @Composable
 fun ISSTrackerPage(viewModel: IssViewModel = viewModel()) {
-    val issData by viewModel.issResponse.collectAsState() // Mudou de issPosition para issResponse
+    val issResponse by viewModel.issResponse.collectAsState() // Mudou de issPosition para issResponse
     val distancia by viewModel.distancia.collectAsState()
     val context = LocalContext.current
 
@@ -51,11 +51,11 @@ fun ISSTrackerPage(viewModel: IssViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (issData != null) {
+        if (issResponse != null) {
             Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text("Latitude: ${issData!!.posicao.latitude}", color = Color.White)
-                    Text("Longitude: ${issData!!.posicao.longitude}", color = Color.White)
+                    Text("Latitude: ${issResponse!!.posicao.latitude}", color = Color.White)
+                    Text("Longitude: ${issResponse!!.posicao.longitude}", color = Color.White)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
