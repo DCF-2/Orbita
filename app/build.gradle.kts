@@ -84,4 +84,13 @@ dependencies {
 
     // COIL (Para carregar imagens de URL)
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Firebase Firestore
+        implementation("com.google.firebase:firebase-firestore-ktx:24.10.0")
+
+    // Coroutines (para operações assíncronas de rede)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // Coil (para carregar imagens de URLs no Compose)
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }

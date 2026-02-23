@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.dcf2.orbita.MainViewModel
+import com.dcf2.orbita.viewmodel.MainViewModel
 import com.dcf2.orbita.ui.DiarioPage
 import com.dcf2.orbita.ui.ExplorarPage
 import com.dcf2.orbita.ui.HomePage

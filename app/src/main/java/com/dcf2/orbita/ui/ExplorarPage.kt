@@ -20,10 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController // Importante: Adicione este import
-import com.dcf2.orbita.MainViewModel
+import com.dcf2.orbita.viewmodel.MainViewModel
 import com.dcf2.orbita.model.Curiosidade
 import com.dcf2.orbita.model.EventoAstronomico
-import com.dcf2.orbita.ui.nav.BottomNavItem // Importante: Adicione este import
 
 @Composable
 fun ExplorarPage(

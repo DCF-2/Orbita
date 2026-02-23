@@ -19,6 +19,7 @@ import com.dcf2.orbita.ui.NovaObservacaoDialog
 import com.dcf2.orbita.ui.nav.BottomNavItem
 import com.dcf2.orbita.ui.nav.MainNavHost
 import com.dcf2.orbita.ui.theme.OrbitaTheme
+import com.dcf2.orbita.viewmodel.MainViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

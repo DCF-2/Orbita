@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.dcf2.orbita.MainViewModel
+import com.dcf2.orbita.viewmodel.MainViewModel
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable

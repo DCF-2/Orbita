@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp // Use automirrored se seu compose for novo, ou Icons.Default.ExitToApp
 import androidx.compose.material.icons.filled.ExitToApp // Fallback caso o de cima n exista
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -17,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dcf2.orbita.MainViewModel
+import com.dcf2.orbita.viewmodel.MainViewModel
 
 @Composable
 fun PerfilPage(

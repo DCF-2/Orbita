@@ -1,4 +1,4 @@
-package com.dcf2.orbita
+package com.dcf2.orbita.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.getValue
