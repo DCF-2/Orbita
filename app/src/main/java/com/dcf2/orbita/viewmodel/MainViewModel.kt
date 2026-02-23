@@ -1,9 +1,9 @@
 package com.dcf2.orbita.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.getValue       // <--- IMPORT ESSENCIAL
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.setValue       // <--- IMPORT ESSENCIAL
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -16,40 +16,42 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainViewModel : ViewModel() {
+
     // --- ISS TRACKER LOGIC ---
-        var issPosition by mutableStateOf<IssPosition?>(null)
-            private set
+    // Usando IssResponse (ou IssPositionData) conforme definimos antes
+    var issResponse by mutableStateOf<IssResponse?>(null)
+        private set
 
-        // Configuração do Retrofit
-        private val api: IssApi by lazy {
-            Retrofit.Builder()
-                .baseUrl("https://api.wheretheiss.at/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(IssApi::class.java)
-        }
+    // Configuração do Retrofit
+    private val api: IssApi by lazy {
+        Retrofit.Builder()
+            .baseUrl("http://api.open-notify.org/") // Usei a URL que configuramos antes
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(IssApi::class.java)
+    }
 
-        init {
-            startTrackingIss()
-        }
+    init {
+        startTrackingIss()
+    }
 
-        private fun startTrackingIss() {
-            viewModelScope.launch {
-                while (true) {
-                    try {
-                        val result = api.getPosition()
-                        issPosition = result
-                        // Log para conferir se está chegando
-                        Log.d("ISS_TRACKER", "Lat: ${result.latitude}, Lon: ${result.longitude}")
-                    } catch (e: Exception) {
-                        Log.e("ISS_TRACKER", "Erro ao buscar ISS: ${e.message}")
-                    }
-                    // Espera 5 segundos antes de atualizar de novo
-                    delay(5000)
+    private fun startTrackingIss() {
+        viewModelScope.launch {
+            while (true) {
+                try {
+                    // Correção do nome do método conforme interface IssApi
+                    val result = api.getIssPosition()
+                    issResponse = result
+                    Log.d("ISS_TRACKER", "Sucesso: $result")
+                } catch (e: Exception) {
+                    Log.e("ISS_TRACKER", "Erro ao buscar ISS: ${e.message}")
                 }
+                delay(5000)
             }
         }
+    }
 
+    // --- LÓGICA DO DIÁRIO ---
     private val _observacoes = getFakeObservacoes().toMutableStateList()
     val observacoes: List<Observacao> get() = _observacoes
 
@@ -69,6 +71,7 @@ class MainViewModel : ViewModel() {
         _observacoes.remove(obs)
     }
 
+    // --- DADOS ESTÁTICOS ---
     val eventos = listOf(
         EventoAstronomico(1, "Eclipse Lunar Total", "14 Mar 2025", "A Lua ficará vermelha.", TipoEvento.ECLIPSE),
         EventoAstronomico(2, "Chuva de Líridas", "22 Abr 2025", "Pico da chuva de meteoros.", TipoEvento.METEOROS),
@@ -87,7 +90,6 @@ class MainViewModel : ViewModel() {
     )
 }
 
-// Mantenha a função auxiliar no final do arquivo
 fun getFakeObservacoes() = listOf(
     Observacao(1, "Lua Cheia", "Estava brilhante hoje!", "24/10/2025", "Davi"),
     Observacao(2, "Passagem da ISS", "Passou muito rápido.", "23/10/2025", "NASA Fan"),

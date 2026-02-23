@@ -34,6 +34,7 @@ Thumbs.db
 # --- Arquivos gerados em Runtime (Logs, Capturas) ---
 captures/
 *.hprof
+*.log
 
 # --- Código Nativo (C++) ---
 .externalNativeBuild
