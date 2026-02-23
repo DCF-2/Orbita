@@ -1,138 +1,96 @@
 package com.dcf2.orbita.ui.page
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.view.ViewGroup
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.content.Context
+import android.location.Location
+import android.location.LocationManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState // Importante para rolar
-import androidx.compose.foundation.verticalScroll     // Importante para rolar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.dcf2.orbita.viewmodel.MainViewModel
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dcf2.orbita.viewmodel.IssViewModel
 
-@SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ISSTrackerPage(viewModel: MainViewModel) {
-    val issData = viewModel.issPosition
+fun ISSTrackerPage(viewModel: IssViewModel = viewModel()) {
+    val issData by viewModel.issResponse.collectAsState() // Mudou de issPosition para issResponse
+    val distancia by viewModel.distancia.collectAsState()
+    val context = LocalContext.current
 
-    // Estado de rolagem para telas pequenas
-    val scrollState = rememberScrollState()
+    // Gerenciador de Permissão de GPS
+    val locationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            obterLocalizacao(context, viewModel)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF050B14))
-            .verticalScroll(scrollState) // <--- CORREÇÃO 1: Permite rolar a tela
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        Text("Rastreador ISS", style = MaterialTheme.typography.headlineMedium, color = Color.White)
 
-        // 1. Modelo 3D (WebView)
-        Box(
-            modifier = Modifier
-                .height(320.dp) // <--- CORREÇÃO 2: Diminuí um pouco para sobrar espaço
-                .fillMaxWidth()
-                .background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = Color(0xFF2D9CDB))
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Carregando modelo 3D...", color = Color.Gray, fontSize = 12.sp)
-            }
+        Spacer(modifier = Modifier.height(32.dp))
 
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
+        if (issData != null) {
+            Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Text("Latitude: ${issData!!.posicao.latitude}", color = Color.White)
+                    Text("Longitude: ${issData!!.posicao.longitude}", color = Color.White)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (distancia != null) {
+                        Text(
+                            "Distância de você: ${"%.2f".format(distancia)} km",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFFF2994A)
                         )
-                        settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
-                        setBackgroundColor(0x00000000)
-                        webViewClient = WebViewClient()
-
-                        // <--- CORREÇÃO 3: ID correto da ISS (2378)
-                        loadUrl("https://solarsystem.nasa.gov/gltf_embed/2378")
+                    } else {
+                        Text("Aguardando seu GPS...", color = Color.Gray)
+                        Button(onClick = { obterLocalizacao(context, viewModel) }) {
+                            Text("Ativar GPS")
+                        }
                     }
                 }
-            )
-        }
-
-        // 2. Painel de Informações
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                "Estação Espacial Internacional",
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (issData != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("●", color = Color.Green, fontSize = 12.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Dados em tempo real", color = Color.Green, fontSize = 14.sp)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                InfoCard("Latitude", String.format("%.4f°", issData.latitude))
-                InfoCard("Longitude", String.format("%.4f°", issData.longitude))
-                InfoCard("Altitude", String.format("%.2f km", issData.altitude))
-                InfoCard("Velocidade", String.format("%.0f km/h", issData.velocity))
-
-                // Espaço extra no final para não cortar o último card
-                Spacer(modifier = Modifier.height(32.dp))
-            } else {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                    color = Color(0xFF2D9CDB),
-                    trackColor = Color(0xFF1E293B)
-                )
-                Text("Estabelecendo conexão via satélite...", color = Color.Gray)
             }
+        } else {
+            CircularProgressIndicator(color = Color(0xFFF2994A))
+            Text("Conectando ao satélite...", color = Color.Gray, modifier = Modifier.padding(top=8.dp))
         }
     }
 }
 
-@Composable
-fun InfoCard(label: String, valor: String) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(label, color = Color(0xFF94A3B8), fontSize = 14.sp)
-            Text(
-                valor,
-                color = Color(0xFF2D9CDB),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+@SuppressLint("MissingPermission")
+fun obterLocalizacao(context: Context, viewModel: IssViewModel) {
+    try {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+        location?.let {
+            viewModel.atualizarLocalizacaoUsuario(it.latitude, it.longitude)
         }
+    } catch (e: Exception) {
+        // Tratar erro ou pedir permissão novamente
     }
 }
