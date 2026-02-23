@@ -1,11 +1,16 @@
 package com.dcf2.orbita.model
 
-// Essa classe representa os dados que vêm da API
-data class IssPosition(
-    val latitude: Double,
-    val longitude: Double,
-    val altitude: Double,
-    val velocity: Double,
-    val visibility: String,
-    val timestamp: Long
+import com.google.gson.annotations.SerializedName
+
+// Esta classe representa a resposta completa da API
+data class IssResponse(
+    @SerializedName("iss_position") val posicao: IssPositionData,
+    @SerializedName("message") val mensagem: String,
+    @SerializedName("timestamp") val timestamp: Long
+)
+
+// Esta classe representa apenas as coordenadas (o "miolo" do JSON)
+data class IssPositionData(
+    @SerializedName("latitude") val latitude: String,
+    @SerializedName("longitude") val longitude: String
 )
