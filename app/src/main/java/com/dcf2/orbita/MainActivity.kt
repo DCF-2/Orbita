@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.dcf2.orbita.repository.ImageRepository
 import com.dcf2.orbita.ui.dialog.NovaObservacaoDialog
 import com.dcf2.orbita.ui.nav.BottomNavItem
 import com.dcf2.orbita.ui.nav.MainNavHost
@@ -24,6 +25,8 @@ import com.dcf2.orbita.viewmodel.MainViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Inicializa o sistema de imagens
+        ImageRepository.init(this)
         val viewModel: MainViewModel by viewModels()
         setContent {
             OrbitaTheme {

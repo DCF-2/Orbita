@@ -93,4 +93,7 @@ dependencies {
 
     // Coil (para carregar imagens de URLs no Compose)
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Cloudinary (Gerenciamento de Imagens)
+    implementation("com.cloudinary:cloudinary-android:2.5.0")
 }
