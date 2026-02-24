@@ -18,13 +18,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MainViewModel : ViewModel() {
 
     // --- ISS TRACKER LOGIC ---
-    // Alterado para IssResponse para compatibilidade com a API
-    var issResponse by mutableStateOf<IssResponse?>(null)
+    // Agora usamos o novo modelo IssSatellitePosition
+    var issData by mutableStateOf<IssSatellitePosition?>(null)
         private set
 
     private val api: IssApi by lazy {
         Retrofit.Builder()
-            .baseUrl("http://api.open-notify.org/")
+            .baseUrl("https://api.wheretheiss.at/") // URL Segura (HTTPS)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(IssApi::class.java)
@@ -38,19 +38,18 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 try {
-                    // Chama o método correto da interface
                     val result = api.getIssPosition()
-                    issResponse = result
-                    Log.d("ISS_TRACKER", "Sucesso: $result")
+                    issData = result
+                    Log.d("ISS_TRACKER", "Dados recebidos: Alt=${result.altitude}, Vel=${result.velocity}")
                 } catch (e: Exception) {
-                    Log.e("ISS_TRACKER", "Erro ao buscar ISS: ${e.message}")
+                    Log.e("ISS_TRACKER", "Erro: ${e.message}")
                 }
-                delay(5000)
+                delay(3000) // Atualiza a cada 3 segundos (API permite até 1req/s)
             }
         }
     }
 
-    // --- LÓGICA DO DIÁRIO ---
+    // --- LÓGICA DO DIÁRIO (Mantida igual) ---
     private val _observacoes = getFakeObservacoes().toMutableStateList()
     val observacoes: List<Observacao> get() = _observacoes
 
@@ -70,7 +69,7 @@ class MainViewModel : ViewModel() {
         _observacoes.remove(obs)
     }
 
-    // --- DADOS ESTÁTICOS ---
+    // --- DADOS ESTÁTICOS (Mantidos iguais) ---
     val eventos = listOf(
         EventoAstronomico(1, "Eclipse Lunar Total", "14 Mar 2025", "A Lua ficará vermelha.", TipoEvento.ECLIPSE),
         EventoAstronomico(2, "Chuva de Líridas", "22 Abr 2025", "Pico da chuva de meteoros.", TipoEvento.METEOROS),
