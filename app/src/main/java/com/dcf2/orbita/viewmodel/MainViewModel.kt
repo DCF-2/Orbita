@@ -124,4 +124,10 @@ class MainViewModel : ViewModel() {
         EventoAstronomico(1, "Eclipse Lunar", "14 Mar 2025", "Lua Vermelha", TipoEvento.ECLIPSE),
         EventoAstronomico(2, "Chuva de Líridas", "22 Abr 2025", "Meteoros.", TipoEvento.METEOROS)
     )
+    val curiosidades = listOf(
+        Curiosidade(1, "Júpiter", "O Gigante Gasoso", "Planeta", Color(0xFFE67E22)),
+        Curiosidade(2, "Betelgeuse", "Prestes a explodir?", "Estrela", Color(0xFFC0392B)),
+        Curiosidade(3, "Buracos Negros", "Sem retorno", "Cosmos", Color(0xFF8E44AD)),
+        Curiosidade(4, "Via Láctea", "Nossa casa", "Galáxia", Color(0xFF2980B9))
+    )
 }
