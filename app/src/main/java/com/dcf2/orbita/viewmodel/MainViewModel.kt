@@ -21,7 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainViewModel : ViewModel() {
 
-    // --- REPOSITÓRIOS ---
+    // ---- REPOSITÓRIOS ----
     private val journalRepository = JournalRepository()
 
     // --- ESTADOS DE UI ---
