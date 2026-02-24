@@ -125,10 +125,7 @@ fun MainScreen(viewModel: MainViewModel) {
         if (showDialog) {
             NovaObservacaoDialog(
                 onDismiss = { showDialog = false },
-                onConfirm = { titulo, descricao ->
-                    viewModel.addObservacao(titulo, descricao)
-                    showDialog = false
-                }
+                viewModel = viewModel
             )
         }
     }
