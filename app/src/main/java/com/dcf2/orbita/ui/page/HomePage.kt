@@ -33,7 +33,7 @@ fun HomePage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
         )
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(viewModel.observacoes) { obs ->
+            items(viewModel.posts) { obs ->
                 PostItem(obs)
             }
         }

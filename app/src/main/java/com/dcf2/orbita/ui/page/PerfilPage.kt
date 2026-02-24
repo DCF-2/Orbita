@@ -57,7 +57,7 @@ fun PerfilPage(
         ) {
             StatItem("Nível", user.nivel.toString())
             StatItem("XP", user.xp.toString())
-            StatItem("Posts", viewModel.observacoes.filter { it.autor == "Você" }.size.toString())
+            StatItem("Posts", viewModel.posts.filter { it.userName == "Você" }.size.toString())
         }
 
         Spacer(modifier = Modifier.height(32.dp))

@@ -1,6 +1,6 @@
 package com.example.orbita.repository
 
-import com.example.orbita.model.Post
+import com.dcf2.orbita.model.Post
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
