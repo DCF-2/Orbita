@@ -18,11 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dcf2.orbita.viewmodel.MainViewModel
+import java.util.Locale
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ISSTrackerPage(viewModel: MainViewModel) { // <--- CORREÇÃO AQUI: Aceita MainViewModel
-    val issResponse = viewModel.issResponse
+fun ISSTrackerPage(viewModel: MainViewModel) {
+    val issData = viewModel.issData // Pega os dados novos
 
     val scrollState = rememberScrollState()
 
@@ -32,9 +33,10 @@ fun ISSTrackerPage(viewModel: MainViewModel) { // <--- CORREÇÃO AQUI: Aceita M
             .background(Color(0xFF050B14))
             .verticalScroll(scrollState)
     ) {
+        // Modelo 3D (NASA)
         Box(
             modifier = Modifier
-                .height(320.dp)
+                .height(300.dp)
                 .fillMaxWidth()
                 .background(Color.Black),
             contentAlignment = Alignment.Center
@@ -49,8 +51,6 @@ fun ISSTrackerPage(viewModel: MainViewModel) { // <--- CORREÇÃO AQUI: Aceita M
                         )
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
                         setBackgroundColor(0x00000000)
                         webViewClient = WebViewClient()
                         loadUrl("https://solarsystem.nasa.gov/gltf_embed/2378")
@@ -59,32 +59,35 @@ fun ISSTrackerPage(viewModel: MainViewModel) { // <--- CORREÇÃO AQUI: Aceita M
             )
         }
 
-        Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth()
-        ) {
+        // Painel de Dados
+        Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
             Text(
                 "Estação Espacial Internacional",
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (issResponse != null) {
-                val pos = issResponse.posicao
-
+            if (issData != null) {
+                // Indicador de Status (Dia ou Noite)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("●", color = Color.Green, fontSize = 12.sp)
+                    val statusColor = if (issData.visibility == "daylight") Color.Yellow else Color.Blue
+                    val statusText = if (issData.visibility == "daylight") "À Luz do Sol" else "Na Sombra (Eclipse)"
+
+                    Text("●", color = statusColor, fontSize = 12.sp)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Dados em tempo real", color = Color.Green, fontSize = 14.sp)
+                    Text(statusText, color = statusColor, fontSize = 14.sp)
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val lat = pos.latitude.toDoubleOrNull() ?: 0.0
-                val lon = pos.longitude.toDoubleOrNull() ?: 0.0
-
-                InfoCard("Latitude", String.format("%.4f°", lat))
-                InfoCard("Longitude", String.format("%.4f°", lon))
+                // Cards de Informação Rica
+                InfoCard("Latitude", String.format(Locale.US, "%.4f°", issData.latitude))
+                InfoCard("Longitude", String.format(Locale.US, "%.4f°", issData.longitude))
+                InfoCard("Altitude", String.format(Locale.US, "%.1f km", issData.altitude))
+                InfoCard("Velocidade", String.format(Locale.US, "%.0f km/h", issData.velocity))
 
                 Spacer(modifier = Modifier.height(32.dp))
             } else {
@@ -99,6 +102,7 @@ fun ISSTrackerPage(viewModel: MainViewModel) { // <--- CORREÇÃO AQUI: Aceita M
     }
 }
 
+// O Composable InfoCard pode ser mantido igual ao anterior
 @Composable
 fun InfoCard(label: String, valor: String) {
     Card(
