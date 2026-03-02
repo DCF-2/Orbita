@@ -44,7 +44,8 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
         }
 
         //Rota Mapa
-        composable(BottomNavItem.Mapa.route) { MapPage(viewModel = viewModel)
+        composable(BottomNavItem.Mapa.route) {
+            MapPage(viewModel = viewModel, navController = navController)
         }
 
         //Rota ISS

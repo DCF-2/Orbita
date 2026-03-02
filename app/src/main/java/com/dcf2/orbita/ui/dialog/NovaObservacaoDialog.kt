@@ -1,11 +1,13 @@
 package com.dcf2.orbita.ui.dialog
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,9 +23,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import coil.compose.AsyncImage // Certifique-se que tem o Coil no build.gradle
+import androidx.core.content.ContextCompat
+import coil.compose.AsyncImage
 import com.dcf2.orbita.viewmodel.MainViewModel
+import com.google.android.gms.location.LocationServices
 
+@SuppressLint("MissingPermission")
 @Composable
 fun NovaObservacaoDialog(
     onDismiss: () -> Unit,
@@ -33,7 +38,29 @@ fun NovaObservacaoDialog(
     var descricao by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
+    // Variáveis para guardar as coordenadas
+    var latitude by remember { mutableStateOf<Double?>(null) }
+    var longitude by remember { mutableStateOf<Double?>(null) }
+
     val context = LocalContext.current
+
+    // Tentar obter a localização assim que o Dialog abre
+    LaunchedEffect(Unit) {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    latitude = location.latitude
+                    longitude = location.longitude
+                }
+            }
+        }
+    }
 
     // Seletor de Fotos Nativo
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -51,7 +78,7 @@ fun NovaObservacaoDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Novo Registro", style = MaterialTheme.typography.titleLarge, color = Color.White)
+                Text("Novo Registo", style = MaterialTheme.typography.titleLarge, color = Color.White)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -80,7 +107,6 @@ fun NovaObservacaoDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Área da Imagem (Preview ou Botão de Adicionar)
                 if (imageUri != null) {
                     Box(modifier = Modifier.fillMaxWidth().height(150.dp)) {
                         AsyncImage(
@@ -91,7 +117,6 @@ fun NovaObservacaoDialog(
                                 .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop
                         )
-                        // Botão de Remover Imagem
                         IconButton(
                             onClick = { imageUri = null },
                             modifier = Modifier
@@ -118,15 +143,15 @@ fun NovaObservacaoDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botão de Salvar com Loading
                 Button(
                     onClick = {
                         if (titulo.isNotEmpty()) {
-                            viewModel.criarPost(titulo, descricao, imageUri, context)
+                            // Passar latitude e longitude para o ViewModel
+                            viewModel.criarPost(titulo, descricao, imageUri, latitude, longitude, context)
                             onDismiss()
                         }
                     },
-                    enabled = !viewModel.isUploading, // Desabilita se estiver enviando
+                    enabled = !viewModel.isUploading,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2994A)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
