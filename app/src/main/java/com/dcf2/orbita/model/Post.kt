@@ -11,5 +11,7 @@ data class Post(
     val descricao: String = "",
     val fotoUrl: String? = null,
     val dataObservacao: Timestamp = Timestamp.now(),
-    val likes: Int = 0
+    val likes: Int = 0,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )

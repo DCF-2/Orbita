@@ -130,4 +130,50 @@ class MainViewModel : ViewModel() {
         Curiosidade(3, "Buracos Negros", "Sem retorno", "Cosmos", Color(0xFF8E44AD)),
         Curiosidade(4, "Via Láctea", "Nossa casa", "Galáxia", Color(0xFF2980B9))
     )
+
+    fun criarPost(
+        titulo: String,
+        descricao: String,
+        imageUri: Uri?,
+        latitude: Double?,
+        longitude: Double?,
+        context: Context
+    ) {
+        viewModelScope.launch {
+            isUploading = true // Ativa loading
+
+            var urlDaFoto: String? = null
+
+            // 1. Upload da Imagem (se houver) para o Cloudinary
+            if (imageUri != null) {
+                urlDaFoto = ImageRepository.uploadImage(imageUri, context)
+                Log.d("OrbitaApp", "Upload finalizado: $urlDaFoto")
+            }
+
+            // 2. Cria o objeto Post COM A LOCALIZAÇÃO
+            val novoPost = Post(
+                userId = "user_temp_id",
+                userName = usuario.nome,
+                userAvatar = "",
+                titulo = titulo,
+                descricao = descricao,
+                fotoUrl = urlDaFoto,
+                likes = 0,
+                latitude = latitude, // GUARDA A LATITUDE
+                longitude = longitude // GUARDA A LONGITUDE
+            )
+
+            // 3. Salva no Firestore
+            val sucesso = journalRepository.addPost(novoPost)
+
+            if (sucesso) {
+                Log.d("OrbitaApp", "Salvo no Firestore com sucesso!")
+                fetchPosts() // Recarrega a lista para garantir sincronia no feed e no mapa
+            } else {
+                Log.e("OrbitaApp", "Erro ao salvar no Firestore")
+            }
+
+            isUploading = false // Desativa loading
+        }
+    }
 }
