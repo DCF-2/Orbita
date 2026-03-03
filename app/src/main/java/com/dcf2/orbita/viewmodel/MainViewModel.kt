@@ -13,7 +13,9 @@ import androidx.lifecycle.viewModelScope
 import com.dcf2.orbita.api.iss.IssApi
 import com.dcf2.orbita.model.*
 import com.dcf2.orbita.repository.ImageRepository
+import com.dcf2.orbita.repository.UserRepository
 import com.example.orbita.repository.JournalRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -23,6 +25,11 @@ class MainViewModel : ViewModel() {
 
     // ---- REPOSITÓRIOS ----
     private val journalRepository = JournalRepository()
+    private val userRepository = UserRepository()
+
+    // --- ESTADO DO USUÁRIO LOGADO ---
+    var usuarioLogado by mutableStateOf<Usuario?>(null)
+        private set
 
     // --- ESTADOS DE UI ---
     var isUploading by mutableStateOf(false)
@@ -42,7 +49,34 @@ class MainViewModel : ViewModel() {
 
     init {
         startTrackingIss()
-        fetchPosts() // <--- AGORA CARREGAMOS DO FIREBASE AO INICIAR
+        fetchPosts()
+        fetchCurrentUser()
+    }
+
+    // FUNÇÃO QUE CARREGA OU CRIA O USUÁRIO REAL
+    fun fetchCurrentUser() {
+        val fbUser = FirebaseAuth.getInstance().currentUser
+        if (fbUser != null) {
+            viewModelScope.launch {
+                // Tenta buscar no banco
+                var user = userRepository.getUser(fbUser.uid)
+
+                // Se for a primeira vez que o usuário loga, ele não existe no Firestore ainda
+                if (user == null) {
+                    user = Usuario(
+                        id = fbUser.uid,
+                        nome = fbUser.displayName ?: "Astronauta Sem Nome",
+                        email = fbUser.email ?: "",
+                        avatarUrl = fbUser.photoUrl?.toString() ?: ""
+                    )
+                    // Salva no banco para a próxima vez
+                    userRepository.saveUser(user)
+                }
+
+                // Atualiza o estado da UI com o usuário real!
+                usuarioLogado = user
+            }
+        }
     }
 
     private fun startTrackingIss() {
@@ -77,103 +111,52 @@ class MainViewModel : ViewModel() {
     }
 
     // FUNÇÃO PRINCIPAL: Cria o post + Upload Imagem + Salva no Firestore
-    fun criarPost(titulo: String, descricao: String, imageUri: Uri?, context: Context) {
+    fun criarPost(titulo: String, descricao: String, imageUri: Uri?, latitude: Double?, longitude: Double?, context: Context) {
         viewModelScope.launch {
-            isUploading = true // Ativa loading
+            isUploading = true
 
             var urlDaFoto: String? = null
-
-            // 1. Upload da Imagem (se houver) para o Cloudinary
             if (imageUri != null) {
                 urlDaFoto = ImageRepository.uploadImage(imageUri, context)
                 Log.d("OrbitaApp", "Upload finalizado: $urlDaFoto")
             }
 
-            // 2. Cria o objeto Post
+            // SEGURANÇA: Só cria post se o usuário estiver logado
+            val currentUser = usuarioLogado ?: return@launch
+
             val novoPost = Post(
-                // O ID será gerado automaticamente se vazio, ou pelo Firestore
-                userId = "user_temp_id", // Futuramente, pegaremos do Firebase Auth
-                userName = usuario.nome, // Pega o nome do perfil atual
-                userAvatar = "",
+                userId = currentUser.id, // AGORA É REAL
+                userName = currentUser.nome, // AGORA É REAL
+                userAvatar = currentUser.avatarUrl, // AGORA É REAL (Foto do Google!)
                 titulo = titulo,
                 descricao = descricao,
                 fotoUrl = urlDaFoto,
-                likes = 0
+                likes = 0,
+                latitude = latitude,
+                longitude = longitude
             )
 
-            // 3. Salva no Firestore (O Pulo do Gato!)
             val sucesso = journalRepository.addPost(novoPost)
 
             if (sucesso) {
                 Log.d("OrbitaApp", "Salvo no Firestore com sucesso!")
-                fetchPosts() // Recarrega a lista para garantir sincronia
+                fetchPosts()
             } else {
                 Log.e("OrbitaApp", "Erro ao salvar no Firestore")
             }
-
-            isUploading = false // Desativa loading
+            isUploading = false
         }
     }
-
-    // --- DADOS ESTÁTICOS ---
-    var usuario by mutableStateOf(
-        UsuarioPerfil("Astronauta", "@astro_dev", 1, 150, "Explorando o universo.")
-    )
 
     val eventos = listOf(
         EventoAstronomico(1, "Eclipse Lunar", "14 Mar 2025", "Lua Vermelha", TipoEvento.ECLIPSE),
         EventoAstronomico(2, "Chuva de Líridas", "22 Abr 2025", "Meteoros.", TipoEvento.METEOROS)
     )
+
     val curiosidades = listOf(
         Curiosidade(1, "Júpiter", "O Gigante Gasoso", "Planeta", Color(0xFFE67E22)),
         Curiosidade(2, "Betelgeuse", "Prestes a explodir?", "Estrela", Color(0xFFC0392B)),
         Curiosidade(3, "Buracos Negros", "Sem retorno", "Cosmos", Color(0xFF8E44AD)),
         Curiosidade(4, "Via Láctea", "Nossa casa", "Galáxia", Color(0xFF2980B9))
     )
-
-    fun criarPost(
-        titulo: String,
-        descricao: String,
-        imageUri: Uri?,
-        latitude: Double?,
-        longitude: Double?,
-        context: Context
-    ) {
-        viewModelScope.launch {
-            isUploading = true // Ativa loading
-
-            var urlDaFoto: String? = null
-
-            // 1. Upload da Imagem (se houver) para o Cloudinary
-            if (imageUri != null) {
-                urlDaFoto = ImageRepository.uploadImage(imageUri, context)
-                Log.d("OrbitaApp", "Upload finalizado: $urlDaFoto")
-            }
-
-            // 2. Cria o objeto Post COM A LOCALIZAÇÃO
-            val novoPost = Post(
-                userId = "user_temp_id",
-                userName = usuario.nome,
-                userAvatar = "",
-                titulo = titulo,
-                descricao = descricao,
-                fotoUrl = urlDaFoto,
-                likes = 0,
-                latitude = latitude, // GUARDA A LATITUDE
-                longitude = longitude // GUARDA A LONGITUDE
-            )
-
-            // 3. Salva no Firestore
-            val sucesso = journalRepository.addPost(novoPost)
-
-            if (sucesso) {
-                Log.d("OrbitaApp", "Salvo no Firestore com sucesso!")
-                fetchPosts() // Recarrega a lista para garantir sincronia no feed e no mapa
-            } else {
-                Log.e("OrbitaApp", "Erro ao salvar no Firestore")
-            }
-
-            isUploading = false // Desativa loading
-        }
-    }
 }
