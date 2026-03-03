@@ -54,11 +54,12 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
         }
 
         // Rota Perfil
-        composable("perfil_route") { // ou o nome da sua rota
+        composable("perfil_route") {
             val context = LocalContext.current // Pega o contexto atual
 
             PerfilPage(
                 viewModel = viewModel,
+                navController = navController,
                 onLogout = {
                     // 1. Desloga do Firebase
                     FirebaseAuth.getInstance().signOut()
