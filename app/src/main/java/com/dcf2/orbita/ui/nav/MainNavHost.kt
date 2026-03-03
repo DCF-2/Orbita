@@ -50,7 +50,7 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
 
         //Rota ISS
         composable("iss_detalhes") {
-            ISSTrackerPage(viewModel = viewModel)
+            ISSTrackerPage(viewModel = viewModel, navController = navController)
         }
 
         // Rota Perfil

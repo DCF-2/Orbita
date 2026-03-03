@@ -1,7 +1,7 @@
 package com.dcf2.orbita.ui.page
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable // Importante: Adicione este import
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -12,23 +12,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController // Importante: Adicione este import
+import androidx.navigation.NavController
 import com.dcf2.orbita.viewmodel.MainViewModel
 import com.dcf2.orbita.model.Curiosidade
 import com.dcf2.orbita.model.EventoAstronomico
+import java.util.Locale
 
 @Composable
 fun ExplorarPage(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    navController: NavController // 1. Recebe o controlador
+    navController: NavController
 ) {
     LazyColumn(
         modifier = modifier
@@ -39,10 +40,10 @@ fun ExplorarPage(
     ) {
         // Seção ISS Tracker
         item {
-            // 2. Define o que acontece no clique (Navegar para a rota da ISS)
-            ISSTrackerCard(onClick = {
-                navController.navigate("iss_detalhes") // Use a string direta ou BottomNavItem.IssDetalhes.route
-            })
+            ISSTrackerCard(
+                viewModel = viewModel,
+                onClick = { navController.navigate("iss_detalhes") }
+            )
         }
 
         // Seção Eventos
@@ -69,12 +70,35 @@ fun ExplorarPage(
 }
 
 @Composable
-fun ISSTrackerCard(onClick: () -> Unit) { // 3. Recebe a função de clique
+fun ISSTrackerCard(viewModel: MainViewModel, onClick: () -> Unit) {
+    val issData = viewModel.issData
+    val user = viewModel.usuarioLogado
+
+    // Estado para guardar o texto de distância
+    var distanciaText by remember { mutableStateOf("Calculando distância...") }
+
+    // Calcula a distância sempre que a ISS ou o Usuário mudarem de posição
+    LaunchedEffect(issData, user) {
+        val userLat = user?.latitude
+        val userLng = user?.longitude
+        val issLat = issData?.latitude
+        val issLng = issData?.longitude
+
+        if (userLat != null && userLng != null && issLat != null && issLng != null) {
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(userLat, userLng, issLat, issLng, results)
+            val distKm = results[0] / 1000 // Converter metros para Km
+            distanciaText = "A ${String.format(Locale.US, "%.0f", distKm)} km de você"
+        } else if (issData != null) {
+            distanciaText = "Velocidade: ${String.format(Locale.US, "%.0f", issData.velocity)} km/h"
+        }
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() } // 4. Torna o card clicável
+            .clickable { onClick() }
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -84,14 +108,14 @@ fun ISSTrackerCard(onClick: () -> Unit) { // 3. Recebe a função de clique
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text("Onde está a ISS?", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Toque para rastrear em 3D", color = Color.Gray, fontSize = 14.sp) // Texto novo
-                Text("Próxima passagem: 18:40", color = Color(0xFFF2994A), fontSize = 14.sp)
+                Text("Toque para rastrear ao vivo", color = Color.Gray, fontSize = 14.sp)
+                // O texto agora é dinâmico com a distância!
+                Text(distanciaText, color = Color(0xFFF2994A), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
             }
         }
     }
 }
 
-// O restante (EventoCard, CuriosidadeItem) continua igual ao seu arquivo original...
 @Composable
 fun EventoCard(evento: EventoAstronomico) {
     Card(
