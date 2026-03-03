@@ -7,10 +7,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dcf2.orbita.api.iss.IssApi
+import com.dcf2.orbita.api.nasa.NasaApiService
+import com.dcf2.orbita.api.nasa.NeoModel
 import com.dcf2.orbita.model.*
 import com.dcf2.orbita.repository.ImageRepository
 import com.dcf2.orbita.repository.UserRepository
@@ -47,10 +48,25 @@ class MainViewModel : ViewModel() {
             .create(IssApi::class.java)
     }
 
+    var apodList by mutableStateOf<List<ApodModel>>(emptyList())
+        private set
+
+    var isLoadingApod by mutableStateOf(false)
+        private set
+
+    private val nasaApi = NasaApiService.create()
+
+    var spaceWeatherEvents by mutableStateOf<List<DonkiModel>>(emptyList())
+        private set
+
+    var nearEarthObjects by mutableStateOf<List<NeoModel>>(emptyList())
+        private set
+
     init {
         startTrackingIss()
         fetchPosts()
         fetchCurrentUser()
+        fetchNasaApod()
     }
 
     // FUNÇÃO QUE CARREGA OU CRIA O USUÁRIO REAL
@@ -58,10 +74,7 @@ class MainViewModel : ViewModel() {
         val fbUser = FirebaseAuth.getInstance().currentUser
         if (fbUser != null) {
             viewModelScope.launch {
-                // Tenta buscar no banco
                 var user = userRepository.getUser(fbUser.uid)
-
-                // Se for a primeira vez que o usuário loga, ele não existe no Firestore ainda
                 if (user == null) {
                     user = Usuario(
                         id = fbUser.uid,
@@ -69,64 +82,33 @@ class MainViewModel : ViewModel() {
                         email = fbUser.email ?: "",
                         avatarUrl = fbUser.photoUrl?.toString() ?: ""
                     )
-                    // Salva no banco para a próxima vez
                     userRepository.saveUser(user)
                 }
-
-                // Atualiza o estado da UI com o usuário real!
                 usuarioLogado = user
             }
         }
     }
-    // Atualiar Perfil
-    fun atualizarPerfil(novoNome: String, novaBio: String) {
-        val currentUser = usuarioLogado ?: return
 
-        // Cria uma cópia do utilizador com os novos dados
-        val updatedUser = currentUser.copy(nome = novoNome, bio = novaBio)
-
+    fun fetchSpaceWeather() {
         viewModelScope.launch {
-            // Guarda no Firestore usando o nosso UserRepository
-            val sucesso = userRepository.saveUser(updatedUser)
-            if (sucesso) {
-                // Se guardou no banco, atualiza a variável da tela
-                usuarioLogado = updatedUser
-                Log.d("OrbitaApp", "Perfil atualizado com sucesso!")
+            try {
+                spaceWeatherEvents = nasaApi.getSpaceWeatherEvents().take(5)
+            } catch (e: Exception) {
+                Log.e("NASA_API", "Erro DONKI: ${e.message}")
             }
         }
     }
 
-    fun atualizarFotoPerfil(imageUri: Uri, context: Context) {
+    fun fetchNearEarthObjects() {
         viewModelScope.launch {
-            val currentUser = usuarioLogado ?: return@launch
-
-            // Reutiliza o teu repositório de imagens (Cloudinary)
-            val urlDaFoto = ImageRepository.uploadImage(imageUri, context)
-
-            if (urlDaFoto != null) {
-                // Copia o utilizador atual alterando apenas a foto
-                val updatedUser = currentUser.copy(avatarUrl = urlDaFoto)
-
-                // Salva no banco de dados
-                val sucesso = userRepository.saveUser(updatedUser)
-                if (sucesso) {
-                    usuarioLogado = updatedUser // Atualiza a UI instantaneamente
-                    Log.d("OrbitaApp", "Foto de perfil atualizada com sucesso!")
-                }
+            try {
+                val response = nasaApi.getNearEarthObjects()
+                // Pega todos os objetos de todas as datas (geralmente só hoje no feed)
+                val objects = response.near_earth_objects.values.flatten().take(5)
+                nearEarthObjects = objects
+            } catch (e: Exception) {
+                Log.e("NASA_API", "Erro NeoWs: ${e.message}")
             }
-        }
-    }
-
-    fun atualizarLocalizacaoUsuario(lat: Double, lng: Double) {
-        val currentUser = usuarioLogado ?: return
-
-        viewModelScope.launch {
-            // Atualiza no banco de dados usando a função que já tínhamos no UserRepository
-            userRepository.updateUserLocation(currentUser.id, lat, lng)
-
-            // Atualiza o estado da UI localmente para refletir as novas coordenadas
-            usuarioLogado = currentUser.copy(latitude = lat, longitude = lng)
-            Log.d("OrbitaApp", "Localização do explorador sincronizada: $lat, $lng")
         }
     }
 
@@ -148,7 +130,6 @@ class MainViewModel : ViewModel() {
     private val _posts = mutableListOf<Post>().toMutableStateList()
     val posts: List<Post> get() = _posts
 
-    // Função para buscar posts da nuvem
     fun fetchPosts() {
         viewModelScope.launch {
             try {
@@ -161,24 +142,64 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    // FUNÇÃO PRINCIPAL: Cria o post + Upload Imagem + Salva no Firestore
+    // --- LÓGICA DA NASA (APOD) ---
+    fun fetchNasaApod() {
+        if (isLoadingApod) return
+        viewModelScope.launch {
+            isLoadingApod = true
+            try {
+                val result = nasaApi.getRandomAstronomyPictures(count = 5)
+                val imagens = result.filter { it.tipoMidia == "image" }
+                apodList = apodList + imagens
+            } catch (e: Exception) {
+                Log.e("NASA_API", "Erro APOD: ${e.message}")
+            } finally {
+                isLoadingApod = false
+            }
+        }
+    }
+
+    fun atualizarPerfil(novoNome: String, novaBio: String) {
+        val currentUser = usuarioLogado ?: return
+        val updatedUser = currentUser.copy(nome = novoNome, bio = novaBio)
+        viewModelScope.launch {
+            val sucesso = userRepository.saveUser(updatedUser)
+            if (sucesso) usuarioLogado = updatedUser
+        }
+    }
+
+    fun atualizarFotoPerfil(imageUri: Uri, context: Context) {
+        viewModelScope.launch {
+            val currentUser = usuarioLogado ?: return@launch
+            val urlDaFoto = ImageRepository.uploadImage(imageUri, context)
+            if (urlDaFoto != null) {
+                val updatedUser = currentUser.copy(avatarUrl = urlDaFoto)
+                val sucesso = userRepository.saveUser(updatedUser)
+                if (sucesso) usuarioLogado = updatedUser
+            }
+        }
+    }
+
+    fun atualizarLocalizacaoUsuario(lat: Double, lng: Double) {
+        val currentUser = usuarioLogado ?: return
+        viewModelScope.launch {
+            userRepository.updateUserLocation(currentUser.id, lat, lng)
+            usuarioLogado = currentUser.copy(latitude = lat, longitude = lng)
+        }
+    }
+
     fun criarPost(titulo: String, descricao: String, imageUri: Uri?, latitude: Double?, longitude: Double?, context: Context) {
         viewModelScope.launch {
             isUploading = true
-
             var urlDaFoto: String? = null
             if (imageUri != null) {
                 urlDaFoto = ImageRepository.uploadImage(imageUri, context)
-                Log.d("OrbitaApp", "Upload finalizado: $urlDaFoto")
             }
-
-            // SEGURANÇA: Só cria post se o usuário estiver logado
             val currentUser = usuarioLogado ?: return@launch
-
             val novoPost = Post(
-                userId = currentUser.id, // AGORA É REAL
-                userName = currentUser.nome, // AGORA É REAL
-                userAvatar = currentUser.avatarUrl, // AGORA É REAL (Foto do Google!)
+                userId = currentUser.id,
+                userName = currentUser.nome,
+                userAvatar = currentUser.avatarUrl,
                 titulo = titulo,
                 descricao = descricao,
                 fotoUrl = urlDaFoto,
@@ -186,28 +207,9 @@ class MainViewModel : ViewModel() {
                 latitude = latitude,
                 longitude = longitude
             )
-
             val sucesso = journalRepository.addPost(novoPost)
-
-            if (sucesso) {
-                Log.d("OrbitaApp", "Salvo no Firestore com sucesso!")
-                fetchPosts()
-            } else {
-                Log.e("OrbitaApp", "Erro ao salvar no Firestore")
-            }
+            if (sucesso) fetchPosts()
             isUploading = false
         }
     }
-
-    val eventos = listOf(
-        EventoAstronomico(1, "Eclipse Lunar", "14 Mar 2025", "Lua Vermelha", TipoEvento.ECLIPSE),
-        EventoAstronomico(2, "Chuva de Líridas", "22 Abr 2025", "Meteoros.", TipoEvento.METEOROS)
-    )
-
-    val curiosidades = listOf(
-        Curiosidade(1, "Júpiter", "O Gigante Gasoso", "Planeta", Color(0xFFE67E22)),
-        Curiosidade(2, "Betelgeuse", "Prestes a explodir?", "Estrela", Color(0xFFC0392B)),
-        Curiosidade(3, "Buracos Negros", "Sem retorno", "Cosmos", Color(0xFF8E44AD)),
-        Curiosidade(4, "Via Láctea", "Nossa casa", "Galáxia", Color(0xFF2980B9))
-    )
 }
