@@ -32,8 +32,7 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
             ExplorarPage(viewModel = viewModel, navController = navController)
         }
 
-        // Rota Observatório (CORRIGIDO AQUI)
-        // Antes estava ObservatorioPage(), agora passamos o viewModel
+        // Rota Observatório
         composable(BottomNavItem.Observatorio.route) {
             ObservatorioPage(viewModel = viewModel)
         }
@@ -43,34 +42,27 @@ fun MainNavHost(navController: NavHostController, viewModel: MainViewModel) {
             DiarioPage(viewModel = viewModel)
         }
 
-        //Rota Mapa
+        // Rota Mapa
         composable(BottomNavItem.Mapa.route) {
             MapPage(viewModel = viewModel, navController = navController)
         }
 
-        //Rota ISS
+        // Rota ISS (CORRIGIDO: Recebe o navController para poder voltar)
         composable("iss_detalhes") {
             ISSTrackerPage(viewModel = viewModel, navController = navController)
         }
 
         // Rota Perfil
         composable("perfil_route") {
-            val context = LocalContext.current // Pega o contexto atual
+            val context = LocalContext.current
 
             PerfilPage(
                 viewModel = viewModel,
                 navController = navController,
                 onLogout = {
-                    // 1. Desloga do Firebase
                     FirebaseAuth.getInstance().signOut()
-
-                    // 2. Cria o Intent para voltar para a tela de Login
                     val intent = Intent(context, LoginActivity::class.java)
-
-                    // 3. Limpa a pilha (para o botão voltar não retornar ao perfil)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-
-                    // 4. Inicia a Activity e encerra a atual
                     context.startActivity(intent)
                     (context as? Activity)?.finish()
                 }

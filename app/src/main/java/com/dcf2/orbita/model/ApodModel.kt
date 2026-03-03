@@ -1,4 +1,4 @@
-package com.example.orbita.model
+package com.dcf2.orbita.model
 
 import com.google.gson.annotations.SerializedName
 

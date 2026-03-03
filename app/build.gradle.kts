@@ -5,15 +5,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21" // Importante para navegação
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
     id("com.google.gms.google-services")
 }
+
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+val nasaApiKey = localProperties.getProperty("NASA_API_KEY") ?: "DEMO_KEY"
 
 android {
     namespace = "com.dcf2.orbita"
@@ -28,8 +30,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // --- INJETANDO A CHAVE NO MANIFEST ---
+        // --- INJETANDO A CHAVE NO MANIFEST E NO CODIGO ---
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        manifestPlaceholders["NASA_API_KEY"] = nasaApiKey
+        
+        // Remove aspas extras se já existirem no local.properties
+        val cleanNasaApiKey = nasaApiKey.trim('\"')
+        buildConfigField("String", "NASA_API_KEY", "\"$cleanNasaApiKey\"")
     }
 
     buildTypes {
@@ -50,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -64,10 +72,10 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     // Navegação e Serialização
-    implementation("androidx.navigation:navigation-compose:2.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
-    // Ícones estendidos
+    // Ícones e Lifecycle
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
 
