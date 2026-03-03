@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp // Fallback caso o de cima n exista
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -13,18 +13,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.dcf2.orbita.viewmodel.MainViewModel
 
 @Composable
 fun PerfilPage(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    onLogout: () -> Unit // <--- 1. Recebe a ação de logout
+    onLogout: () -> Unit
 ) {
-    val user = viewModel.usuario
+    // 1. Usa o utilizador real vindo do Firebase
+    val user = viewModel.usuarioLogado
+
+    // 2. Enquanto o Firebase não devolve os dados, mostra um "Loading"
+    if (user == null) {
+        Box(
+            modifier = modifier.fillMaxSize().background(Color(0xFF050B14)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color(0xFFF2994A))
+        }
+        return // Impede que o resto do ecrã seja desenhado sem dados
+    }
 
     Column(
         modifier = modifier
@@ -33,7 +47,7 @@ fun PerfilPage(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Avatar
+        // Avatar (Com validação se a pessoa não tiver foto)
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -41,12 +55,28 @@ fun PerfilPage(
                 .background(Color.Gray),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Person, null, modifier = Modifier.size(80.dp), tint = Color.White)
+            if (user.avatarUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = user.avatarUrl,
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Fallback para quem regista por Email/Senha sem foto
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Sem foto",
+                    modifier = Modifier.size(80.dp),
+                    tint = Color.White
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Text(user.nome, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Text(user.handle, color = Color(0xFF2D9CDB), fontSize = 16.sp)
+        Text(text = user.nome.ifEmpty { "Explorador" }, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        // Substituímos o "@handle" pelo email da pessoa, já que é o que temos do Firebase por agora
+        Text(text = user.email, color = Color(0xFF2D9CDB), fontSize = 16.sp)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -57,7 +87,8 @@ fun PerfilPage(
         ) {
             StatItem("Nível", user.nivel.toString())
             StatItem("XP", user.xp.toString())
-            StatItem("Posts", viewModel.posts.filter { it.userName == "Você" }.size.toString())
+            // Conta os posts filtrando pelo ID real do utilizador, não pela string "Você"
+            StatItem("Posts", viewModel.posts.filter { it.userId == user.id }.size.toString())
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -86,13 +117,12 @@ fun PerfilPage(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 3. Botão de Logout (Vermelho)
+        // Botão de Logout
         Button(
-            onClick = { onLogout() }, // Chama a função passada por parâmetro
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC0392B)), // Vermelho escuro
+            onClick = { onLogout() },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC0392B)),
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Tente Icons.AutoMirrored.Filled.ExitToApp se o Default não funcionar
             Icon(Icons.Default.ExitToApp, null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Sair da Conta")
