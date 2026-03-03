@@ -117,6 +117,19 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun atualizarLocalizacaoUsuario(lat: Double, lng: Double) {
+        val currentUser = usuarioLogado ?: return
+
+        viewModelScope.launch {
+            // Atualiza no banco de dados usando a função que já tínhamos no UserRepository
+            userRepository.updateUserLocation(currentUser.id, lat, lng)
+
+            // Atualiza o estado da UI localmente para refletir as novas coordenadas
+            usuarioLogado = currentUser.copy(latitude = lat, longitude = lng)
+            Log.d("OrbitaApp", "Localização do explorador sincronizada: $lat, $lng")
+        }
+    }
+
     private fun startTrackingIss() {
         viewModelScope.launch {
             while (true) {

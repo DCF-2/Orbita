@@ -1,7 +1,9 @@
 package com.dcf2.orbita.ui.page
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -13,6 +15,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
@@ -22,10 +25,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.core.content.ContextCompat
 import coil.Coil
@@ -33,12 +41,14 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.dcf2.orbita.ui.nav.BottomNavItem
 import com.dcf2.orbita.viewmodel.MainViewModel
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 
+@SuppressLint("MissingPermission")
 @Composable
 fun MapPage(viewModel: MainViewModel, navController: NavHostController) {
     val context = LocalContext.current
@@ -57,6 +67,21 @@ fun MapPage(viewModel: MainViewModel, navController: NavHostController) {
         onResult = { isGranted -> hasLocationPermission = isGranted }
     )
 
+    // Cliente de Localização do Google Play Services
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    // Assim que tiver permissão, capta a localização e envia para o Firebase!
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    // Magia a acontecer: Guarda a localização do utilizador na Cloud!
+                    viewModel.atualizarLocalizacaoUsuario(location.latitude, location.longitude)
+                }
+            }
+        }
+    }
+
     val recife = LatLng(-8.0631, -34.8711)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(recife, 12f)
@@ -64,7 +89,6 @@ fun MapPage(viewModel: MainViewModel, navController: NavHostController) {
 
     val observacoes = viewModel.posts.toList()
 
-    // Removido a Column e o Text para o mapa ocupar todo o espaço do Scaffold!
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -95,7 +119,6 @@ fun MapPage(viewModel: MainViewModel, navController: NavHostController) {
                             snippet = "Por: ${post.userName} (Clique para ir ao Feed)",
                             icon = iconState.value ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE),
                             onInfoWindowClick = {
-                                // Navega para o feed quando a caixa de info do pino for clicada
                                 navController.navigate(BottomNavItem.Home.route) {
                                     popUpTo(navController.graph.startDestinationId) { saveState = true }
                                     launchSingleTop = true
