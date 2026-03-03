@@ -78,6 +78,44 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+    // Atualiar Perfil
+    fun atualizarPerfil(novoNome: String, novaBio: String) {
+        val currentUser = usuarioLogado ?: return
+
+        // Cria uma cópia do utilizador com os novos dados
+        val updatedUser = currentUser.copy(nome = novoNome, bio = novaBio)
+
+        viewModelScope.launch {
+            // Guarda no Firestore usando o nosso UserRepository
+            val sucesso = userRepository.saveUser(updatedUser)
+            if (sucesso) {
+                // Se guardou no banco, atualiza a variável da tela
+                usuarioLogado = updatedUser
+                Log.d("OrbitaApp", "Perfil atualizado com sucesso!")
+            }
+        }
+    }
+
+    fun atualizarFotoPerfil(imageUri: Uri, context: Context) {
+        viewModelScope.launch {
+            val currentUser = usuarioLogado ?: return@launch
+
+            // Reutiliza o teu repositório de imagens (Cloudinary)
+            val urlDaFoto = ImageRepository.uploadImage(imageUri, context)
+
+            if (urlDaFoto != null) {
+                // Copia o utilizador atual alterando apenas a foto
+                val updatedUser = currentUser.copy(avatarUrl = urlDaFoto)
+
+                // Salva no banco de dados
+                val sucesso = userRepository.saveUser(updatedUser)
+                if (sucesso) {
+                    usuarioLogado = updatedUser // Atualiza a UI instantaneamente
+                    Log.d("OrbitaApp", "Foto de perfil atualizada com sucesso!")
+                }
+            }
+        }
+    }
 
     private fun startTrackingIss() {
         viewModelScope.launch {
